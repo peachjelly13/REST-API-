@@ -1,12 +1,16 @@
 import express from "express"
 import mongoose from "mongoose"
 import dotenv from "dotenv"
+import router from "./routes/user.routes"
 
 dotenv.config()
 
 
 
+
 const app = express();
+app.use(express.json())
+app.use("/api/v1/users",router);
 //mongoose.connect() returns a promise
 mongoose.connect(process.env.MONGO_URL)
 .then(()=>{app.listen(5000);})
