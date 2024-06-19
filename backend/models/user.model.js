@@ -18,7 +18,9 @@ const userSchema = new Schema({
         type:String,
         required:true,
         minlength:8
-    }
+    },
+    //because one user can have multiple blogs
+    blogs:[{type:mongoose.Types.ObjectId,ref:"Blog",required:true}]
 })
 
 const User = mongoose.model("User",userSchema);

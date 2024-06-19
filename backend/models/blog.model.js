@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import User from "./user.model";
 
 const Schema = mongoose.Schema;
 
@@ -15,8 +16,10 @@ const blogSchema = new Schema({
         type:String,
         required:true
     },
+    //every blog has only one user
     user:{
-        type:String,
+        type:mongoose.Types.ObjectId,
+        ref:"User",
         required:true
     }
 })

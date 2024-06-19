@@ -39,7 +39,8 @@ const signup = async(req,res,next)=>{
     const user = new User({
         name,
         email,
-        password:storedPassword
+        password:storedPassword,
+        blogs:[]
     })
     
     // method inside mongoose to save our user

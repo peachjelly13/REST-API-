@@ -64,9 +64,25 @@ const getById = async(req,res,next)=>{
     return res.status(200).json({blog})
 }
 
+const deleteBlog = async(req,res,next)=>{
+    const Id = req.params.id;
+    let blog;
+    try {
+        blog = await Blog.findByIdAndRemove(Id);
+    } catch (error) {
+        return console.log(error);
+    }
+    if(!blog){
+        res.status(400).json({message:"Blog to delete doesnt exist"})
+    }
+    res.status(200).json({message:"Successfully deleted"})
+
+}
+
 export {
     getAllBlogs,
     createBlog,
     updateBlog,
-    getById
+    getById,
+    deleteBlog
 }
