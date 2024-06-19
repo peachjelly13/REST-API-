@@ -1,4 +1,6 @@
+import mongoose from "mongoose";
 import Blog from "../models/blog.model";
+import User from "../models/user.model";
 
 const getAllBlogs = async (req,res,next)=>{
     let blogs;
@@ -15,6 +17,15 @@ const getAllBlogs = async (req,res,next)=>{
 
 const createBlog = async(req,res,next)=>{
     const {title,description,image,user} = req.body;
+    let existingUser;
+    try {
+        existingUser = await User.findById(user);
+    } catch (error) {
+        return console.log(error);
+    }
+    if(!existingUser){
+        return res.status(400).json({message:"Unable to find User by this Id"})
+    }
     const blog = new Blog({
         title,
         description,
@@ -22,9 +33,17 @@ const createBlog = async(req,res,next)=>{
         user
     });
     try {
-        await blog.save();
+        const session = await mongoose.startSession();
+        session.startTransaction();
+        await blog.save({session});
+        //saving a user from a particular session
+        existingUser.blogs.push(blog);
+        await existingUser.save({session});
+        await session.commitTransaction();
+        //saving user from a particular session
     } catch (error) {
         return console.log(error)
+        return res.status(500).json({message:error})
         
     }
     return res.status(200).json({message:"Blog created"})
@@ -68,7 +87,9 @@ const deleteBlog = async(req,res,next)=>{
     const Id = req.params.id;
     let blog;
     try {
-        blog = await Blog.findByIdAndRemove(Id);
+        blog = await Blog.findByIdAndRemove(Id).populate('user');
+        await blog.user.blogs.pull(blog)
+        blog.user.save();
     } catch (error) {
         return console.log(error);
     }
@@ -76,7 +97,20 @@ const deleteBlog = async(req,res,next)=>{
         res.status(400).json({message:"Blog to delete doesnt exist"})
     }
     res.status(200).json({message:"Successfully deleted"})
+}
 
+const userBlog = async(req,res,next)=>{
+    const userId = req.params.id;
+    let userBlogs;
+    try {
+        userBlogs = await User.findById(userId).populate('blog');
+    } catch (error) {
+        return console.log(error)
+    }
+    if(!userBlogs){
+        return res.status(400).json({message:"No blog found"});
+    }
+    return res.status(200).json({blogs:userBlogs})
 }
 
 export {
@@ -84,5 +118,6 @@ export {
     createBlog,
     updateBlog,
     getById,
-    deleteBlog
+    deleteBlog,
+    userBlog
 }

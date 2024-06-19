@@ -45,7 +45,7 @@ const signup = async(req,res,next)=>{
     
     // method inside mongoose to save our user
     try {
-        user.save()
+       await  user.save()
     } catch (error) {
         return console.log(error)
     }
